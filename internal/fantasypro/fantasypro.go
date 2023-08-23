@@ -5,8 +5,9 @@ import (
 	"net/http"
 )
 
+// GetFantasyProCSV get a list of players from Fantasy Pros in CSV format
 func GetFantasyProCSV() ([][]string, error) {
-	resp, err := http.Get("https://partners.fantasypros.com/api/v1/consensus-rankings.php?sport=NFL&year=2023&week=0&id=1663&position=ALL&type=PPR&scoring=HALF&export=csv")
+	resp, err := http.Get("https://partners.fantasypros.com/api/v1/consensus-rankings.php?sport=NFL&year=2023&week=0&position=ALL&type=PPR&scoring=HALF&export=csv")
 	if err != nil {
 		return nil, err
 	}

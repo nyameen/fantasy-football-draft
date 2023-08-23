@@ -40,238 +40,34 @@ func main() {
 
 	// The menu with menu Title, Description, and Table of players
 	menu := map[string]SideMenu{
-		"all": {"All", "Highest ranking players overall", func(w fyne.Window) fyne.CanvasObject {
-			table := widget.NewTable(
-				func() (int, int) {
-					return len(players), 5
-				},
-				func() fyne.CanvasObject {
-					return widget.NewLabel("label")
-				},
-				func(i widget.TableCellID, o fyne.CanvasObject) {
-					switch i.Col {
-					case 0:
-						o.(*widget.Label).SetText(players[i.Row].Rank)
-					case 1:
-						o.(*widget.Label).SetText(players[i.Row].Name)
-					case 2:
-						o.(*widget.Label).SetText(players[i.Row].Position)
-					case 3:
-						o.(*widget.Label).SetText(players[i.Row].Team)
-					case 4:
-						o.(*widget.Label).SetText(players[i.Row].ByeWeek)
-					}
-				},
-			)
-
-			table.SetColumnWidth(0, 50)
-			table.SetColumnWidth(1, 250)
-			table.SetColumnWidth(2, 100)
-			table.SetColumnWidth(3, 100)
-			return table
-		}},
-		"qb": {"QB", "Highest Ranking Quarter Backs", func(w fyne.Window) fyne.CanvasObject {
-			table := widget.NewTable(
-				func() (int, int) {
-					return len(nflplayers.GetPlayersByPosition("QB", players)), 5
-				},
-				func() fyne.CanvasObject {
-					return widget.NewLabel("label")
-				},
-				func(i widget.TableCellID, o fyne.CanvasObject) {
-					posPlayers := nflplayers.GetPlayersByPosition("QB", players)
-					switch i.Col {
-					case 0:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Rank)
-					case 1:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Name)
-					case 2:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Position)
-					case 3:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Team)
-					case 4:
-						o.(*widget.Label).SetText(posPlayers[i.Row].ByeWeek)
-					}
-				},
-			)
-
-			table.SetColumnWidth(0, 50)
-			table.SetColumnWidth(1, 250)
-			table.SetColumnWidth(2, 100)
-			table.SetColumnWidth(3, 100)
-			return table
-		}},
-		"wr": {"WR", "Highest Ranking Wide Receivers", func(w fyne.Window) fyne.CanvasObject {
-			table := widget.NewTable(
-				func() (int, int) {
-					return len(nflplayers.GetPlayersByPosition("WR", players)), 5
-				},
-				func() fyne.CanvasObject {
-					return widget.NewLabel("label")
-				},
-				func(i widget.TableCellID, o fyne.CanvasObject) {
-					posPlayers := nflplayers.GetPlayersByPosition("WR", players)
-					switch i.Col {
-					case 0:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Rank)
-					case 1:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Name)
-					case 2:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Position)
-					case 3:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Team)
-					case 4:
-						o.(*widget.Label).SetText(posPlayers[i.Row].ByeWeek)
-					}
-				},
-			)
-
-			table.SetColumnWidth(0, 50)
-			table.SetColumnWidth(1, 250)
-			table.SetColumnWidth(2, 100)
-			table.SetColumnWidth(3, 100)
-			return table
-		}},
-		"rb": {"RB", "Highest Ranking Running Backs", func(w fyne.Window) fyne.CanvasObject {
-			table := widget.NewTable(
-				func() (int, int) {
-					return len(nflplayers.GetPlayersByPosition("RB", players)), 5
-				},
-				func() fyne.CanvasObject {
-					return widget.NewLabel("label")
-				},
-				func(i widget.TableCellID, o fyne.CanvasObject) {
-					posPlayers := nflplayers.GetPlayersByPosition("RB", players)
-					switch i.Col {
-					case 0:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Rank)
-					case 1:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Name)
-					case 2:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Position)
-					case 3:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Team)
-					case 4:
-						o.(*widget.Label).SetText(posPlayers[i.Row].ByeWeek)
-					}
-				},
-			)
-
-			table.SetColumnWidth(0, 50)
-			table.SetColumnWidth(1, 250)
-			table.SetColumnWidth(2, 100)
-			table.SetColumnWidth(3, 100)
-			return table
-		}},
-		"te": {"TE", "Highest Ranking Tight Ends", func(w fyne.Window) fyne.CanvasObject {
-			table := widget.NewTable(
-				func() (int, int) {
-					return len(nflplayers.GetPlayersByPosition("TE", players)), 5
-				},
-				func() fyne.CanvasObject {
-					return widget.NewLabel("label")
-				},
-				func(i widget.TableCellID, o fyne.CanvasObject) {
-					posPlayers := nflplayers.GetPlayersByPosition("TE", players)
-					switch i.Col {
-					case 0:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Rank)
-					case 1:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Name)
-					case 2:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Position)
-					case 3:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Team)
-					case 4:
-						o.(*widget.Label).SetText(posPlayers[i.Row].ByeWeek)
-					}
-				},
-			)
-
-			table.SetColumnWidth(0, 50)
-			table.SetColumnWidth(1, 250)
-			table.SetColumnWidth(2, 100)
-			table.SetColumnWidth(3, 100)
-			return table
-		}},
-		"k": {"K", "Highest Ranking Kickers", func(w fyne.Window) fyne.CanvasObject {
-			table := widget.NewTable(
-				func() (int, int) {
-					return len(nflplayers.GetPlayersByPosition("K", players)), 5
-				},
-				func() fyne.CanvasObject {
-					return widget.NewLabel("label")
-				},
-				func(i widget.TableCellID, o fyne.CanvasObject) {
-					posPlayers := nflplayers.GetPlayersByPosition("K", players)
-					switch i.Col {
-					case 0:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Rank)
-					case 1:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Name)
-					case 2:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Position)
-					case 3:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Team)
-					case 4:
-						o.(*widget.Label).SetText(posPlayers[i.Row].ByeWeek)
-					}
-				},
-			)
-
-			table.SetColumnWidth(0, 50)
-			table.SetColumnWidth(1, 250)
-			table.SetColumnWidth(2, 100)
-			table.SetColumnWidth(3, 100)
-			return table
-		}},
-		"def": {"DEF", "Highest Ranking Defenses", func(w fyne.Window) fyne.CanvasObject {
-			table := widget.NewTable(
-				func() (int, int) {
-					return len(nflplayers.GetPlayersByPosition("DST", players)), 5
-				},
-				func() fyne.CanvasObject {
-					return widget.NewLabel("label")
-				},
-				func(i widget.TableCellID, o fyne.CanvasObject) {
-					posPlayers := nflplayers.GetPlayersByPosition("DST", players)
-					switch i.Col {
-					case 0:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Rank)
-					case 1:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Name)
-					case 2:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Position)
-					case 3:
-						o.(*widget.Label).SetText(posPlayers[i.Row].Team)
-					case 4:
-						o.(*widget.Label).SetText(posPlayers[i.Row].ByeWeek)
-					}
-				},
-			)
-
-			table.SetColumnWidth(0, 50)
-			table.SetColumnWidth(1, 250)
-			table.SetColumnWidth(2, 100)
-			table.SetColumnWidth(3, 100)
-			return table
-		}},
+		"all": {"All", "Highest ranking players overall", players.CreateTableCallbackByPosition(nflplayers.ALL)},
+		"qb":  {"QB", "Highest ranking Quarter Backs", players.CreateTableCallbackByPosition(nflplayers.QuarterBack)},
+		"wr":  {"WR", "Highest ranking Wide Receivers", players.CreateTableCallbackByPosition(nflplayers.WideReceiver)},
+		"rb":  {"RB", "Highest ranking Running Backs", players.CreateTableCallbackByPosition(nflplayers.RunningBack)},
+		"te":  {"TE", "Highest ranking Tight Ends", players.CreateTableCallbackByPosition(nflplayers.TightEnd)},
+		"k":   {"K", "Highest ranking Kickers", players.CreateTableCallbackByPosition(nflplayers.Kicker)},
+		"def": {"DEF", "Highest ranking Defenses", players.CreateTableCallbackByPosition(nflplayers.Defense)},
 	}
 
+	// Set the main page to all players
 	content := container.NewMax()
-	title := widget.NewLabel("Nick's Player Rankings")
-	intro := widget.NewLabel("")
+	title := widget.NewLabel(menu["all"].Title)
+	description := widget.NewLabel(menu["all"].Description)
+	content.Objects = []fyne.CanvasObject{menu["all"].View(myWindow)}
+	content.Refresh()
+
+	// Callback function to refresh the right side content
 	sideMenuCB := func(s SideMenu) {
 		title.SetText(s.Title)
-		intro.SetText(s.Description)
+		description.SetText(s.Description)
 
 		content.Objects = []fyne.CanvasObject{s.View(myWindow)}
 		content.Refresh()
 	}
 
-	tutorial := container.NewBorder(
-		container.NewVBox(title, widget.NewSeparator(), intro), nil, nil, nil, content)
-	split := container.NewHSplit(makeNav(sideMenuCB, true, menu), tutorial)
+	border := container.NewBorder(
+		container.NewVBox(title, widget.NewSeparator(), description), nil, nil, nil, content)
+	split := container.NewHSplit(makeNav(sideMenuCB, true, menu), border)
 	split.Offset = 0.2
 	myWindow.SetContent(split)
 
@@ -292,7 +88,7 @@ func makeNav(sideMenuCB func(menu SideMenu), loadPrevious bool, menu map[string]
 			return ok && len(children) > 0
 		},
 		CreateNode: func(branch bool) fyne.CanvasObject {
-			return widget.NewLabel("Collection Widgets")
+			return widget.NewLabel("")
 		},
 		UpdateNode: func(uid string, branch bool, obj fyne.CanvasObject) {
 			t, ok := menu[uid]
