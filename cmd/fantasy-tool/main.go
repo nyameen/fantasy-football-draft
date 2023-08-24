@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -65,11 +66,20 @@ func main() {
 		content.Refresh()
 	}
 
+	clock := widget.NewLabel("")
+
 	border := container.NewBorder(
-		container.NewVBox(title, widget.NewSeparator(), description), nil, nil, nil, content)
+		container.NewVBox(clock, widget.NewSeparator(), description), nil, nil, nil, content)
 	split := container.NewHSplit(makeNav(sideMenuCB, true, menu), border)
 	split.Offset = 0.2
 	myWindow.SetContent(split)
+
+	updateTime(clock)
+	go func() {
+		for range time.Tick(time.Second) {
+			updateTime(clock)
+		}
+	}()
 
 	myWindow.Resize(fyne.NewSize(840, 460))
 	myWindow.ShowAndRun()
@@ -114,4 +124,10 @@ func makeNav(sideMenuCB func(menu SideMenu), loadPrevious bool, menu map[string]
 	}
 
 	return container.NewBorder(nil, nil, nil, nil, tree)
+}
+
+func updateTime(clock *widget.Label) {
+	formatted := time.Now().Format("03:04:05")
+	clock.TextStyle = fyne.TextStyle{Bold: true}
+	clock.SetText(formatted)
 }
