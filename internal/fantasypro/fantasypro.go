@@ -15,10 +15,6 @@ func GetFantasyProCSV() ([][]string, error) {
 	defer resp.Body.Close()
 	reader := csv.NewReader(resp.Body)
 	reader.Comma = ';'
-	data, err := reader.ReadAll()
-	if err != nil {
-		return nil, err
-	}
 
-	return data, nil
+	return reader.ReadAll()
 }

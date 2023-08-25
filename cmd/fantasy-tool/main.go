@@ -1,14 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"time"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/nyameen/fantasy-football-draft/internal/draftclock"
 	"github.com/nyameen/fantasy-football-draft/internal/fantasypro"
 	"github.com/nyameen/fantasy-football-draft/internal/nflplayers"
 )
@@ -30,7 +28,7 @@ func main() {
 
 	data, err := fantasypro.GetFantasyProCSV()
 	if err != nil {
-		fmt.Println("Error, could not get CSV: ", err)
+		fyne.LogError("Error, could not get CSV: ", err)
 		return
 	}
 
@@ -57,6 +55,20 @@ func main() {
 	content.Objects = []fyne.CanvasObject{menu["all"].View(myWindow)}
 	content.Refresh()
 
+	// table.SetColumnWidth(0, 50)
+	// table.SetColumnWidth(1, 250)
+	// table.SetColumnWidth(2, 100)
+	// table.SetColumnWidth(3, 100)
+
+	// this is really gross...
+	// find a way to make it have a width
+	r := widget.NewLabel("Rank")
+	pn := widget.NewLabel("Player Name")
+	pos := widget.NewLabel("Position")
+	t := widget.NewLabel("Team")
+	b := widget.NewLabel("Bye Week")
+	header := container.NewHBox(r, widget.NewSeparator(), pn, widget.NewSeparator(), pos, widget.NewSeparator(), t, widget.NewSeparator(), b)
+
 	// Callback function to refresh the right side content
 	sideMenuCB := func(s SideMenu) {
 		title.SetText(s.Title)
@@ -66,20 +78,17 @@ func main() {
 		content.Refresh()
 	}
 
-	clock := widget.NewLabel("")
+	clock, err := draftclock.NewDraftClock()
+	if err != nil {
+		fyne.LogError("could not create clock objects: ", err)
+		return
+	}
 
 	border := container.NewBorder(
-		container.NewVBox(clock, widget.NewSeparator(), description), nil, nil, nil, content)
+		container.NewVBox(clock.ClockObjects, widget.NewSeparator(), description, header), nil, nil, nil, content)
 	split := container.NewHSplit(makeNav(sideMenuCB, true, menu), border)
 	split.Offset = 0.2
 	myWindow.SetContent(split)
-
-	updateTime(clock)
-	go func() {
-		for range time.Tick(time.Second) {
-			updateTime(clock)
-		}
-	}()
 
 	myWindow.Resize(fyne.NewSize(840, 460))
 	myWindow.ShowAndRun()
@@ -124,10 +133,4 @@ func makeNav(sideMenuCB func(menu SideMenu), loadPrevious bool, menu map[string]
 	}
 
 	return container.NewBorder(nil, nil, nil, nil, tree)
-}
-
-func updateTime(clock *widget.Label) {
-	formatted := time.Now().Format("03:04:05")
-	clock.TextStyle = fyne.TextStyle{Bold: true}
-	clock.SetText(formatted)
 }
