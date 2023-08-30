@@ -2,8 +2,10 @@ package nflplayers
 
 import (
 	"strings"
+	"sync"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -17,7 +19,16 @@ type NFLPlayer struct {
 }
 
 // NFLPlayers collection of individual players
-type NFLPlayers []NFLPlayer
+type NFLPlayers struct {
+	allPlayers []NFLPlayer
+	qbs        []NFLPlayer
+	rbs        []NFLPlayer
+	wrs        []NFLPlayer
+	tes        []NFLPlayer
+	def        []NFLPlayer
+	kickers    []NFLPlayer
+	mux        sync.Mutex
+}
 
 // NFL_POSITION type of position
 type NFL_POSITION string
@@ -33,8 +44,8 @@ var (
 )
 
 // GetNFLPlayersFromCSV extracts players from a CSV format
-func GetNFLPlayersFromCSV(playersCSV [][]string) NFLPlayers {
-	players := []NFLPlayer{}
+func GetNFLPlayersFromCSV(playersCSV [][]string) *NFLPlayers {
+	players := &NFLPlayers{}
 
 	for _, playerCSV := range playersCSV {
 		for _, playerInfo := range playerCSV {
@@ -47,9 +58,16 @@ func GetNFLPlayersFromCSV(playersCSV [][]string) NFLPlayers {
 				Position: playerStr[3],
 				ByeWeek:  getByeWeek((playerStr[2])),
 			}
-			players = append(players, player)
+			players.allPlayers = append(players.allPlayers, player)
 		}
 	}
+
+	players.qbs = players.sortPlayersByPosition(QuarterBack)
+	players.rbs = players.sortPlayersByPosition(RunningBack)
+	players.wrs = players.sortPlayersByPosition(WideReceiver)
+	players.tes = players.sortPlayersByPosition(TightEnd)
+	players.def = players.sortPlayersByPosition(Defense)
+	players.kickers = players.sortPlayersByPosition(Kicker)
 
 	return players
 }
@@ -77,26 +95,40 @@ func getByeWeek(team string) string {
 	return ""
 }
 
-func (n NFLPlayers) getPlayersByPosition(position NFL_POSITION) NFLPlayers {
-	posPLayers := []NFLPlayer{}
+func (n *NFLPlayers) sortPlayersByPosition(position NFL_POSITION) []NFLPlayer {
+	posPlayers := []NFLPlayer{}
 
-	for _, player := range n {
+	for _, player := range n.allPlayers {
 		if player.Position == string(position) {
-			posPLayers = append(posPLayers, player)
+			posPlayers = append(posPlayers, player)
 		}
 	}
 
-	return posPLayers
+	return posPlayers
+}
+
+func (n *NFLPlayers) getPlayers(position NFL_POSITION) []NFLPlayer {
+	switch position {
+	case QuarterBack:
+		return n.qbs
+	case WideReceiver:
+		return n.wrs
+	case RunningBack:
+		return n.rbs
+	case TightEnd:
+		return n.tes
+	case Kicker:
+		return n.kickers
+	case Defense:
+		return n.def
+	}
+
+	return n.allPlayers
 }
 
 // CreateTableCallbackByPosition creates a callback function for creating tables of players
-func (n NFLPlayers) CreateTableCallbackByPosition(position NFL_POSITION) func(w fyne.Window) fyne.CanvasObject {
-	var players NFLPlayers
-	if position == ALL {
-		players = n
-	} else {
-		players = n.getPlayersByPosition(position)
-	}
+func (n *NFLPlayers) CreateTableCallbackByPosition(position NFL_POSITION) func(w fyne.Window) fyne.CanvasObject {
+	players := n.getPlayers(position)
 
 	return func(w fyne.Window) fyne.CanvasObject {
 		table := widget.NewTable(
@@ -126,6 +158,97 @@ func (n NFLPlayers) CreateTableCallbackByPosition(position NFL_POSITION) func(w 
 		table.SetColumnWidth(1, 250)
 		table.SetColumnWidth(2, 100)
 		table.SetColumnWidth(3, 100)
+
+		table.OnSelected = func(id widget.TableCellID) {
+			table.Unselect(id)
+			if id.Col != 1 {
+				// user should click the name to get the option to remove the player
+				// unless every column would prompt a remove player screen
+				return
+			}
+
+			n.createPopUp(fyne.CurrentApp().Driver().AllWindows()[0], players[id.Row].Name, id.Row)
+		}
+
 		return table
 	}
+}
+
+func (n *NFLPlayers) createPopUp(w fyne.Window, playerName string, index int) {
+	var modal *widget.PopUp
+
+	// Split box to ask if we want to remove a player
+	split := container.NewVBox(widget.NewLabel("Remove "+playerName+"?"), container.NewHBox(
+		widget.NewButton("Yes", func() {
+			n.removePlayerFromAll(playerName)
+
+			modal.Hide()
+		}),
+		widget.NewSeparator(),
+		widget.NewButton("No", func() {
+			modal.Hide()
+		}),
+	))
+
+	modal = widget.NewModalPopUp(
+		split,
+		w.Canvas(),
+	)
+
+	modal.Show()
+}
+
+func (n *NFLPlayers) removePlayerFromAll(name string) {
+	// in order to get the tables and sub tables to remove correctly
+	// we must remove the player from allPlayers then remove that player
+	// from his sub group
+	n.mux.Lock()
+	defer n.mux.Unlock()
+
+	var index int = -1
+	var position string
+	for i, player := range n.allPlayers {
+		if player.Name == name {
+			index = i
+			position = player.Position
+			break
+		}
+	}
+
+	if index != -1 {
+		n.allPlayers = append(n.allPlayers[:index], n.allPlayers[index+1:]...)
+	}
+
+	switch position {
+	case string(QuarterBack):
+		n.qbs = n.removePlayerByPosition(n.qbs, name)
+	case string(WideReceiver):
+		n.wrs = n.removePlayerByPosition(n.wrs, name)
+	case string(RunningBack):
+		n.rbs = n.removePlayerByPosition(n.rbs, name)
+	case string(TightEnd):
+		n.tes = n.removePlayerByPosition(n.tes, name)
+	case string(Kicker):
+		n.kickers = n.removePlayerByPosition(n.kickers, name)
+	case string(Defense):
+		n.def = n.removePlayerByPosition(n.def, name)
+	}
+}
+
+func (n *NFLPlayers) removePlayerByPosition(posPlayers []NFLPlayer, name string) []NFLPlayer {
+	newPlayers := []NFLPlayer{}
+
+	var index int = -1
+	for i, player := range posPlayers {
+		if player.Name == name {
+			index = i
+			break
+		}
+	}
+
+	if index != -1 {
+		newPlayers = append(posPlayers[:index], posPlayers[index+1:]...)
+	}
+
+	return newPlayers
 }
