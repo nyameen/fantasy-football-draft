@@ -25,6 +25,8 @@ type SideMenu struct {
 }
 
 func main() {
+	myApp := app.New()
+	myWindow := myApp.NewWindow("Fantasy Football Draft Tool")
 
 	data, err := fantasypro.GetFantasyProCSV()
 	if err != nil {
@@ -33,9 +35,6 @@ func main() {
 	}
 
 	players := nflplayers.GetNFLPlayersFromCSV(data[3:])
-
-	myApp := app.New()
-	myWindow := myApp.NewWindow("Fantasy Football Draft Tool")
 
 	// The menu with menu Title, Description, and Table of players
 	menu := map[string]SideMenu{
@@ -55,19 +54,14 @@ func main() {
 	content.Objects = []fyne.CanvasObject{menu["all"].View(myWindow)}
 	content.Refresh()
 
-	// table.SetColumnWidth(0, 50)
-	// table.SetColumnWidth(1, 250)
-	// table.SetColumnWidth(2, 100)
-	// table.SetColumnWidth(3, 100)
-
 	// this is really gross...
 	// find a way to make it have a width
-	r := widget.NewLabel("Rank")
-	pn := widget.NewLabel("Player Name")
-	pos := widget.NewLabel("Position")
-	t := widget.NewLabel("Team")
-	b := widget.NewLabel("Bye Week")
-	header := container.NewHBox(r, widget.NewSeparator(), pn, widget.NewSeparator(), pos, widget.NewSeparator(), t, widget.NewSeparator(), b)
+	rank := widget.NewLabel("Rank")
+	playerName := widget.NewLabel("Player Name                                            ")
+	position := widget.NewLabel("Position         ")
+	team := widget.NewLabel("Team             ")
+	byeWeek := widget.NewLabel("Bye Week")
+	header := container.NewHBox(rank, widget.NewSeparator(), playerName, widget.NewSeparator(), position, widget.NewSeparator(), team, widget.NewSeparator(), byeWeek)
 
 	// Callback function to refresh the right side content
 	sideMenuCB := func(s SideMenu) {
@@ -84,9 +78,8 @@ func main() {
 		return
 	}
 
-	border := container.NewBorder(
-		container.NewVBox(clock.ClockObjects, widget.NewSeparator(), description, header), nil, nil, nil, content)
-	split := container.NewHSplit(makeNav(sideMenuCB, true, menu), border)
+	border := container.NewBorder(container.NewVBox(clock.ClockObjects, widget.NewSeparator(), description, header), nil, nil, nil, content)
+	split := container.NewHSplit(makeNav(sideMenuCB, menu), border)
 	split.Offset = 0.2
 	myWindow.SetContent(split)
 
@@ -94,9 +87,7 @@ func main() {
 	myWindow.ShowAndRun()
 }
 
-func makeNav(sideMenuCB func(menu SideMenu), loadPrevious bool, menu map[string]SideMenu) fyne.CanvasObject {
-	a := fyne.CurrentApp()
-
+func makeNav(sideMenuCB func(menu SideMenu), menu map[string]SideMenu) fyne.CanvasObject {
 	tree := &widget.Tree{
 		ChildUIDs: func(uid string) []string {
 			return Index[uid]
@@ -121,15 +112,9 @@ func makeNav(sideMenuCB func(menu SideMenu), loadPrevious bool, menu map[string]
 		},
 		OnSelected: func(uid string) {
 			if t, ok := menu[uid]; ok {
-				a.Preferences().SetString("currentTutorial", uid)
 				sideMenuCB(t)
 			}
 		},
-	}
-
-	if loadPrevious {
-		currentPref := a.Preferences().StringWithFallback("currentTutorial", "welcome")
-		tree.Select(currentPref)
 	}
 
 	return container.NewBorder(nil, nil, nil, nil, tree)

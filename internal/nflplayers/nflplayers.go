@@ -205,16 +205,7 @@ func (n *NFLPlayers) removePlayerFromAll(name string) {
 	n.mux.Lock()
 	defer n.mux.Unlock()
 
-	var index int = -1
-	var position string
-	for i, player := range n.allPlayers {
-		if player.Name == name {
-			index = i
-			position = player.Position
-			break
-		}
-	}
-
+	index, position := n.findPlayer(n.allPlayers, name)
 	if index != -1 {
 		n.allPlayers = append(n.allPlayers[:index], n.allPlayers[index+1:]...)
 	}
@@ -235,16 +226,19 @@ func (n *NFLPlayers) removePlayerFromAll(name string) {
 	}
 }
 
-func (n *NFLPlayers) removePlayerByPosition(posPlayers []NFLPlayer, name string) []NFLPlayer {
-	newPlayers := []NFLPlayer{}
-
-	var index int = -1
-	for i, player := range posPlayers {
+func (n *NFLPlayers) findPlayer(players []NFLPlayer, name string) (int, string) {
+	for i, player := range players {
 		if player.Name == name {
-			index = i
-			break
+			return i, player.Position
 		}
 	}
+
+	return -1, ""
+}
+
+func (n *NFLPlayers) removePlayerByPosition(posPlayers []NFLPlayer, name string) []NFLPlayer {
+	newPlayers := []NFLPlayer{}
+	index, _ := n.findPlayer(posPlayers, name)
 
 	if index != -1 {
 		newPlayers = append(posPlayers[:index], posPlayers[index+1:]...)
