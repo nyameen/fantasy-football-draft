@@ -153,6 +153,32 @@ func (n *NFLPlayers) CreateTableCallbackByPosition(position NFL_POSITION) func(w
 				}
 			},
 		)
+		table.CreateHeader = func() fyne.CanvasObject {
+			return widget.NewLabel("Header")
+		}
+		table.UpdateHeader = func(id widget.TableCellID, template fyne.CanvasObject) {
+			label, ok := template.(*widget.Label)
+			if !ok {
+				return
+			}
+			if id.Row == -1 {
+				switch id.Col {
+				case 0:
+					label.SetText("Rank")
+				case 1:
+					label.SetText("Player Name")
+				case 2:
+					label.SetText("Position")
+				case 3:
+					label.SetText("Team")
+				case 4:
+					label.SetText("Bye Week")
+				}
+
+				label.TextStyle.Bold = true
+			}
+		}
+		table.ShowHeaderRow = true
 
 		table.SetColumnWidth(0, 50)
 		table.SetColumnWidth(1, 250)
@@ -167,22 +193,22 @@ func (n *NFLPlayers) CreateTableCallbackByPosition(position NFL_POSITION) func(w
 				return
 			}
 
-			n.createPopUp(fyne.CurrentApp().Driver().AllWindows()[0], players[id.Row].Name, id.Row)
+			n.createPopUp(fyne.CurrentApp().Driver().AllWindows()[0], players[id.Row].Name, id.Row, table)
 		}
 
 		return table
 	}
 }
 
-func (n *NFLPlayers) createPopUp(w fyne.Window, playerName string, index int) {
+func (n *NFLPlayers) createPopUp(w fyne.Window, playerName string, index int, table *widget.Table) {
 	var modal *widget.PopUp
 
 	// Split box to ask if we want to remove a player
 	split := container.NewVBox(widget.NewLabel("Remove "+playerName+"?"), container.NewHBox(
 		widget.NewButton("Yes", func() {
 			n.removePlayerFromAll(playerName)
-
 			modal.Hide()
+			table.Refresh()
 		}),
 		widget.NewSeparator(),
 		widget.NewButton("No", func() {
