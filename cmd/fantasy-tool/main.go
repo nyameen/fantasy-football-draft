@@ -54,15 +54,6 @@ func main() {
 	content.Objects = []fyne.CanvasObject{menu["all"].View(myWindow)}
 	content.Refresh()
 
-	// this is really gross...
-	// find a way to make it have a width
-	rank := widget.NewLabel("Rank")
-	playerName := widget.NewLabel("Player Name                                            ")
-	position := widget.NewLabel("Position         ")
-	team := widget.NewLabel("Team             ")
-	byeWeek := widget.NewLabel("Bye Week")
-	header := container.NewHBox(rank, widget.NewSeparator(), playerName, widget.NewSeparator(), position, widget.NewSeparator(), team, widget.NewSeparator(), byeWeek)
-
 	// Callback function to refresh the right side content
 	sideMenuCB := func(s SideMenu) {
 		title.SetText(s.Title)
@@ -78,7 +69,7 @@ func main() {
 		return
 	}
 
-	border := container.NewBorder(container.NewVBox(clock.ClockObjects, widget.NewSeparator(), description, header), nil, nil, nil, content)
+	border := container.NewBorder(container.NewVBox(clock.ClockObjects, widget.NewSeparator(), description), nil, nil, nil, content)
 	split := container.NewHSplit(makeNav(sideMenuCB, menu), border)
 	split.Offset = 0.2
 	myWindow.SetContent(split)
