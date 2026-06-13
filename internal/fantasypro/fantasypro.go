@@ -91,8 +91,8 @@ func GetByeWeeks() []Bye {
 					b.Week = cell.Text
 				case 1:
 					b.Teams = strings.Split(cell.Text, ",")
-					for i := range b.Teams {
-						b.Teams[i] = strings.TrimSpace(b.Teams[i])
+					for i, team := range b.Teams {
+						b.Teams[i] = strings.TrimSpace(team)
 					}
 				default:
 				}

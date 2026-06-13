@@ -49,7 +49,7 @@ func main() {
 	}
 
 	// Set the main page to all players
-	content := container.NewMax()
+	content := container.NewStack()
 	title := widget.NewLabel(menu["all"].Title)
 	description := widget.NewLabel(menu["all"].Description)
 	content.Objects = []fyne.CanvasObject{menu["all"].View(myWindow)}
