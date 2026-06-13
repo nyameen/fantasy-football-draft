@@ -34,7 +34,8 @@ func main() {
 		return
 	}
 
-	players := nflplayers.GetNFLPlayersFromCSV(data[3:])
+	byeWeeks := fantasypro.GetByeWeeks()
+	players := nflplayers.GetNFLPlayersFromCSV(data[3:], byeWeeks)
 
 	// The menu with menu Title, Description, and Table of players
 	menu := map[string]SideMenu{
@@ -48,7 +49,7 @@ func main() {
 	}
 
 	// Set the main page to all players
-	content := container.NewMax()
+	content := container.NewStack()
 	title := widget.NewLabel(menu["all"].Title)
 	description := widget.NewLabel(menu["all"].Description)
 	content.Objects = []fyne.CanvasObject{menu["all"].View(myWindow)}
