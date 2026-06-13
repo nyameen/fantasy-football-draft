@@ -4,8 +4,51 @@ import (
 	"encoding/csv"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
+
+	"github.com/gocolly/colly/v2"
 )
+
+var teamMap = map[string]string{
+	"Arizona":       "ARI",
+	"Atlanta":       "ATL",
+	"Baltimore":     "BAL",
+	"Buffalo":       "BUF",
+	"Carolina":      "CAR",
+	"Chicago":       "CHI",
+	"Cincinnati":    "CIN",
+	"Cleveland":     "CLE",
+	"Dallas":        "DAL",
+	"Denver":        "DEN",
+	"Detroit":       "DET",
+	"Green Bay":     "GB",
+	"Houston":       "HOU",
+	"Indianapolis":  "IND",
+	"Jacksonville":  "JAC",
+	"Kansas City":   "KC",
+	"Las Vegas":     "LV",
+	"LA Chargers":   "LAC",
+	"LA Rams":       "LAR",
+	"Miami":         "MIA",
+	"Minnesota":     "MIN",
+	"New England":   "NE",
+	"New Orleans":   "NO",
+	"NY Giants":     "NYG",
+	"NY Jets":       "NYJ",
+	"Philadelphia":  "PHI",
+	"Pittsburgh":    "PIT",
+	"San Francisco": "SF",
+	"Seattle":       "SEA",
+	"Tampa Bay":     "TB",
+	"Tennessee":     "TEN",
+	"Washington":    "WAS",
+}
+
+type Bye struct {
+	Week  string
+	Teams []string
+}
 
 // GetFantasyProCSV get a list of players from Fantasy Pros in CSV format
 func GetFantasyProCSV() ([][]string, error) {
@@ -22,4 +65,52 @@ func GetFantasyProCSV() ([][]string, error) {
 	reader.Comma = ';'
 
 	return reader.ReadAll()
+}
+
+func GetByeWeeks() []Bye {
+	var byes []Bye
+
+	c := colly.NewCollector()
+
+	// Target the tbody within the specific table (e.g., matching by ID)
+	c.OnHTML("table#nfl-bye-weeks tbody", func(e *colly.HTMLElement) {
+
+		if e.Index > 0 {
+			return
+		}
+		// Loop through each table row (tr)
+		e.ForEach("tr", func(_ int, row *colly.HTMLElement) {
+			b := Bye{}
+
+			// Loop through each cell (td) in the row
+			row.ForEach("td", func(index int, cell *colly.HTMLElement) {
+				switch index {
+				case 0:
+					b.Week = cell.Text
+				case 1:
+					b.Teams = strings.Split(cell.Text, ",")
+					for i := range b.Teams {
+						b.Teams[i] = strings.TrimSpace(b.Teams[i])
+					}
+				default:
+				}
+			})
+
+			byes = append(byes, b)
+		})
+	})
+
+	c.Visit("https://gridirongames.com/football-schedules/nfl-bye-weeks-schedule/?Year=2026")
+
+	for _, b := range byes {
+		convertNameToAbb(b.Teams)
+	}
+
+	return byes
+}
+
+func convertNameToAbb(teams []string) {
+	for i, team := range teams {
+		teams[i] = teamMap[team]
+	}
 }
