@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"fyne.io/fyne/v2"
 	"github.com/gocolly/colly/v2"
 )
 
@@ -67,6 +68,7 @@ func GetFantasyProCSV() ([][]string, error) {
 	return reader.ReadAll()
 }
 
+// GetByeWeeks get the teams bye week based on year
 func GetByeWeeks() []Bye {
 	var byes []Bye
 
@@ -100,16 +102,20 @@ func GetByeWeeks() []Bye {
 		})
 	})
 
-	c.Visit("https://gridirongames.com/football-schedules/nfl-bye-weeks-schedule/?Year=2026")
+	year, _, _ := time.Now().Date()
+	url := fmt.Sprintf("https://gridirongames.com/football-schedules/nfl-bye-weeks-schedule/?Year=%d", year)
+	if err := c.Visit(url); err != nil {
+		fyne.LogError("could not get Bye weeks: ", err)
+	}
 
 	for _, b := range byes {
-		convertNameToAbb(b.Teams)
+		convertNameToAbbreviation(b.Teams)
 	}
 
 	return byes
 }
 
-func convertNameToAbb(teams []string) {
+func convertNameToAbbreviation(teams []string) {
 	for i, team := range teams {
 		teams[i] = teamMap[team]
 	}

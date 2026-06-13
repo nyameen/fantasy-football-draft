@@ -34,7 +34,8 @@ func main() {
 		return
 	}
 
-	players := nflplayers.GetNFLPlayersFromCSV(data[3:])
+	byeWeeks := fantasypro.GetByeWeeks()
+	players := nflplayers.GetNFLPlayersFromCSV(data[3:], byeWeeks)
 
 	// The menu with menu Title, Description, and Table of players
 	menu := map[string]SideMenu{

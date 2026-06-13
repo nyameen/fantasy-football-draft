@@ -1,12 +1,14 @@
 package nflplayers
 
 import (
+	"slices"
 	"strings"
 	"sync"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"github.com/nyameen/fantasy-football-draft/internal/fantasypro"
 )
 
 // NFLPlayer description of a player
@@ -44,7 +46,7 @@ var (
 )
 
 // GetNFLPlayersFromCSV extracts players from a CSV format
-func GetNFLPlayersFromCSV(playersCSV [][]string) *NFLPlayers {
+func GetNFLPlayersFromCSV(playersCSV [][]string, byeWeeks []fantasypro.Bye) *NFLPlayers {
 	players := &NFLPlayers{}
 
 	for _, playerCSV := range playersCSV {
@@ -56,7 +58,7 @@ func GetNFLPlayersFromCSV(playersCSV [][]string) *NFLPlayers {
 				Name:     playerStr[1],
 				Team:     playerStr[2],
 				Position: playerStr[3],
-				ByeWeek:  getByeWeek((playerStr[2])),
+				ByeWeek:  getByeWeek(byeWeeks, playerStr[2]),
 			}
 			players.allPlayers = append(players.allPlayers, player)
 		}
@@ -72,24 +74,11 @@ func GetNFLPlayersFromCSV(playersCSV [][]string) *NFLPlayers {
 	return players
 }
 
-func getByeWeek(team string) string {
-	switch team {
-	case "CLE", "LAC", "SEA", "TB":
-		return "5"
-	case "GB", "PIT":
-		return "6"
-	case "CAR", "CIN", "DAL", "HOU", "NYJ", "TEN":
-		return "7"
-	case "DEN", "DET", "JAX", "SF", "JAC":
-		return "9"
-	case "KC", "LAR", "MIA", "PHI":
-		return "10"
-	case "ATL", "IND", "NE", "NO":
-		return "11"
-	case "BAL", "BUF", "CHI", "LV", "MIN", "NYG":
-		return "13"
-	case "ARI", "WAS":
-		return "14"
+func getByeWeek(data []fantasypro.Bye, team string) string {
+	for _, d := range data {
+		if slices.Contains(d.Teams, team) {
+			return d.Week
+		}
 	}
 
 	return ""

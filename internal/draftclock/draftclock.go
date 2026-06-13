@@ -139,7 +139,9 @@ func (d *DraftClock) countdown() {
 					SizeName:  theme.SizeNameHeadingText,
 				},
 			}}
-			d.clock.Refresh()
+			fyne.DoAndWait(func() {
+				d.clock.Refresh()
+			})
 
 		// restart button was pressed, stop counting down
 		case <-d.restart:
